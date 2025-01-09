@@ -15,7 +15,7 @@
     <key>StartCalendarInterval</key>
     <dict>
         <key>Minute</key>
-        <integer>18</integer>
+        <integer>20</integer>
     </dict>
 
     <!-- Redirect output to log file -->
