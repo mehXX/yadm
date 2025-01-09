@@ -14,3 +14,5 @@ karabiner:
 is_up_to_date:
 	./bin/check_up_to_date.sh
 
+sync_plist:
+	./plist/sync_plist.sh
