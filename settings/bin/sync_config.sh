@@ -23,3 +23,4 @@ echo "START: yadm"
 /opt/homebrew/bin/yadm push origin master
 
 log_duration_and_complete $start_time "END: yadm done"
+echo "----------------------------------------------------------------------------------------------------"
