@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.backblaze.backup</string>
+    <string>com.yadm</string>
 
     <!-- Program and its arguments -->
     <key>ProgramArguments</key>
     <array>
-        <string><HOME>/settings/bin/restic_backup_to_backblaze.sh</string>
+        <string><HOME>/settings/bin/sync_config.sh</string>
     </array>
 
     <!-- Run every hour -->
