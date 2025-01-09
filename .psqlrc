@@ -1,0 +1,74 @@
+\set QUIET ON
+\x auto
+\timing
+
+\pset linestyle unicode
+\pset null NULL
+
+\set QUIET OFF
+
+\set HISTFILE ~/.psql/history- :DBNAME
+
+
+-- size of tables and db
+\set average_row_size_stats 'SELECT c.relname AS table_name, pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size, TO_CHAR(COALESCE(c.reltuples, 0)::numeric(20, 0), ''FM999G999G999G999'') AS row_count, pg_size_pretty((pg_total_relation_size(c.oid) / NULLIF(c.reltuples, 0))::bigint) AS avg_row_size FROM pg_catalog.pg_statio_user_tables stat JOIN pg_class c ON c.oid = stat.relid WHERE c.reltuples > 0 ORDER BY pg_total_relation_size(c.oid) DESC;'
+\set db_size 'SELECT datname AS database_name, pg_size_pretty(pg_database_size(datname)) AS size FROM pg_database ORDER BY pg_database_size(datname) DESC;'
+
+-- perfomance check (indexes, dead tuples)
+\set unused_indexes 'SELECT schemaname || ''.'' || relname AS table, indexrelname AS index, pg_size_pretty(pg_relation_size(i.indexrelid)) AS index_size, idx_scan as index_scans FROM pg_stat_user_indexes ui JOIN pg_index i ON ui.indexrelid = i.indexrelid WHERE NOT indisunique AND idx_scan < 50 AND pg_relation_size(relid) > 5 * 8192 ORDER BY pg_relation_size(i.indexrelid) / nullif(idx_scan, 0) DESC NULLS FIRST, pg_relation_size(i.indexrelid) DESC;'
+\set index_bloat 'WITH index_info AS (SELECT c.relname AS index_name, pg_size_pretty(pg_relation_size(c.oid)) AS index_size, (stat.idx_blks_read + stat.idx_blks_hit) AS total_pages, stat.idx_blks_read AS bloat_pages FROM pg_class c JOIN pg_statio_user_indexes stat ON c.oid = stat.indexrelid WHERE (stat.idx_blks_read + stat.idx_blks_hit) > 0) SELECT index_name, index_size, pg_size_pretty(bloat_pages * 8192) AS approx_bloat_size FROM index_info ORDER BY bloat_pages DESC LIMIT 10;'
+\set function_stats 'SELECT funcid::regprocedure AS function_name, calls, total_time, self_time FROM pg_stat_user_functions ORDER BY total_time DESC LIMIT 10;'
+\set dead_tuples_stats 'SELECT schemaname, relname, n_dead_tup, n_live_tup FROM pg_stat_user_tables ORDER BY n_dead_tup DESC;'
+\set seq_scans_stats 'SELECT relname, seq_scan, idx_scan, n_live_tup FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 10;'
+\set toast_stats 'SELECT c.relname AS source_table_name, c.relpages AS source_table_number_of_pages, c.reltuples AS source_table_number_of_tuples, c.reltoastrelid AS toast_table_oid, t.relname AS toast_table_name, t.relpages AS toast_table_number_of_pages, t.reltuples AS toast_table_number_of_tuples FROM pg_class c JOIN pg_class t ON c.reltoastrelid = t.oid WHERE t.relpages > 0;'
+
+-- runtime stat for queries
+\set waiting_queries 'SELECT pid, usename, wait_event_type, wait_event, query FROM pg_stat_activity WHERE wait_event_type IS NOT NULL;'
+\set find_deadlocks 'SELECT waiting_locks.pid AS waiting_pid, waiting_locks.locktype AS waiting_locktype, waiting_locks.mode AS waiting_mode, waiting_locks.relation::regclass AS waiting_table, waiting_activity.usename AS waiting_user, blocking_locks.pid AS blocking_pid, blocking_locks.locktype AS blocking_locktype, blocking_locks.mode AS blocking_mode, blocking_locks.relation::regclass AS blocking_table, blocking_activity.usename AS blocking_user, blocking_activity.state AS blocking_state FROM pg_locks waiting_locks JOIN pg_stat_activity waiting_activity ON waiting_locks.pid = waiting_activity.pid JOIN pg_locks blocking_locks ON waiting_locks.locktype = blocking_locks.locktype AND waiting_locks.relation = blocking_locks.relation AND waiting_locks.pid != blocking_locks.pid AND blocking_locks.granted JOIN pg_stat_activity blocking_activity ON blocking_locks.pid = blocking_activity.pid WHERE NOT waiting_locks.granted;'
+\set active_queries 'SELECT pid, usename, age(now(), query_start) AS query_duration, state, query FROM pg_stat_activity WHERE state != ''idle'' ORDER BY query_start ASC;'
+\set oldest_transactions 'SELECT datname, pid, usename, age(now(), xact_start) AS xact_age, query FROM pg_stat_activity WHERE xact_start IS NOT NULL ORDER BY xact_start ASC LIMIT 10;'
+
+
+-- settings, connection count, extensions
+\set connection_stats 'SELECT usename, count(*) AS connections FROM pg_stat_activity GROUP BY usename ORDER BY connections DESC;'
+\set settings 'SELECT name, setting, unit, short_desc FROM pg_settings ORDER BY name;'
+\set extensions 'SELECT extname, extversion FROM pg_extension;'
+
+\echo '--- Size of Tables and Database ---'
+\echo ' '
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo '| Query Name            | Explanation                                                      |'
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo '| average_row_size_stats| Calculates the average row size for each table in the database   |'
+\echo '| db_size               | Retrieves the size of each database in a human-readable format   |'
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo ' '
+\echo '--- Performance Check (Indexes, Dead Tuples) ---'
+\echo ' '
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo '| unused_indexes        | Identifies indexes that are rarely or never used                 |'
+\echo '| index_bloat           | Detects bloat in indexes, indicating wasted space                |'
+\echo '| function_stats        | Gathers statistics on function execution and performance         |'
+\echo '| dead_tuples_stats     | Reports the number of dead tuples in tables for maintenance      |'
+\echo '| seq_scans_stats       | Shows the number of sequential scans versus index scans          |'
+\echo '| toast_stats           | Provides statistics about TOAST tables (used for large objects)  |'
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo ' '
+\echo '--- Runtime Statistics for Queries ---'
+\echo ' '
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo '| waiting_queries       | Lists queries that are currently waiting on an event             |'
+\echo '| find_deadlocks        | Detects potential deadlocks within the database                  |'
+\echo '| active_queries        | Displays currently active (non-idle) queries                     |'
+\echo '| oldest_transactions   | Shows the oldest transactions running in the database            |'
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo ' '
+\echo '--- Settings, Connection Count, Extensions ---'
+\echo ' '
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo '| connection_stats      | Provides the count of active connections per user                |'
+\echo '| settings              | Lists the current database settings and their values             |'
+\echo '| extensions            | Shows installed extensions along with their versions             |'
+\echo '+-----------------------+------------------------------------------------------------------+'
+\echo ' '
+

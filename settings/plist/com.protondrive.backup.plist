@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.protondrive.backup</string>
+
+    <!-- Program and its arguments -->
+    <key>ProgramArguments</key>
+    <array>
+        <string><HOME>/settings/bin/rsync_to_proton.sh</string>
+    </array>
+
+    <!-- Run every hour -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key>
+        <integer>5</integer>
+    </dict>
+
+    <!-- Redirect output to log file -->
+    <key>StandardOutPath</key>
+    <string>/tmp/crontab.logs</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/crontab.logs</string>
+
+    <!-- Run as soon as loaded (optional, but useful in case the system is rebooted) -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep the job alive in case it fails unexpectedly (optional) -->
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>

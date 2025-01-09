@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Check if the first argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: godef <file:line> [level]"
+  exit 1
+fi
+
+# Extract the arguments
+input=$1
+level=${2:-4}
+
+# Run the commands
+gopls definition "$input" $level > definition_result.out &&
+go-prompt-tests -mode=generateTests < definition_result.out > definition_test_prompt.out &&
+cat definition_test_prompt.out | pbcopy

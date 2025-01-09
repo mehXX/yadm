@@ -1,0 +1,75 @@
+[alias]
+  squash = "!f() { \
+    git add .; \
+    COMMIT_MESSAGE='Default commit message'; \
+    while getopts ':m:' OPTION; do \
+      case $OPTION in \
+        m) COMMIT_MESSAGE=\"$OPTARG\";; \
+        :) echo 'Missing argument for -m'; return 1;; \
+        ?) echo 'Invalid option: -'$OPTARG; return 1;; \
+      esac; \
+    done; \
+    shift $(($OPTIND - 1)); \
+    current_branch=$(git symbolic-ref --short HEAD); \
+    commits_difference=$(git rev-list --count master..$current_branch); \
+    if [ \"$commits_difference\" -eq \"0\" ]; then \
+      git add .; \
+      git commit -m \"$COMMIT_MESSAGE\"; \
+    else \
+      git add .; \
+      git commit --fixup HEAD; \
+      GIT_SEQUENCE_EDITOR=\"sed -i '' -e 's/^pick \\(.*\\) fixup!/fixup \\1 fixup!/'\" git rebase -i --autosquash master; \
+    fi; \
+  }; f"
+
+   graph = log --graph --pretty=format:'%C(auto)%h %s %Creset %C(bold)%an %Cgreen(%ar)%Creset\n' --abbrev-commit
+
+[diff]
+	algorithm = histogram
+
+[transfer]
+	fsckobjects = true
+[fetch]
+	fsckobjects = true
+[receive]
+	fsckobjects = true
+
+[core]
+	excludesfile = ~/.config/gitignore_global
+
+[commit]
+	verbose = true
+	cleanup = scissors
+
+[pull]
+	rebase = true
+
+[rebase]
+	autosquash = true
+	autostash = true
+
+[rerere]
+	enabled = true
+
+[status]
+    parallel = true
+
+[push]
+    default = current
+
+[pack]
+    threads = 8
+
+[branch]
+    autoSetupMerge = always
+    autoSetupRebase = always
+
+[url "git@git.uzum.io:"]
+  insteadOf = https://git.uzum.io/
+
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+
+[user]
+    email = n.naumov@uzum.com
+    name = Nikita Naumov

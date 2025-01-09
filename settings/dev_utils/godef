@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Check if the first argument is provided
+if [ -z "$1" ]; then
+  echo "Usage: godef <file:line> [level]"
+  exit 1
+fi
+
+# Extract the arguments
+input=$1
+level=${2:-6}
+
+# Run the commands
+gopls definition "$input" $level > definition_result.out &&
+cat definition_result.out | pbcopy

@@ -1,0 +1,10 @@
+как запустить:
+просто запустить ./sync_plist.sh
+он засинкает plist из текущей папки в ~/Library/LaunchAgents и запуст этих агентов
+
+статья почему надо использовать plist
+https://alvinalexander.com/mac-os-x/mac-osx-startup-crontab-launchd-jobs/
+
+TODO
+ADD BACKUP TO CLOUDFLARE
+https://rclone.org/protondrive/
