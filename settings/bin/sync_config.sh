@@ -14,6 +14,7 @@ log_duration_and_complete() {
 
 start_time=$(get_current_time)
 echo "START: yadm"
+echo "Current time: $(date +"%Y-%m-%d %H:%M:%S")"
 
 #  /opt/homebrew/bin/git --git-dir="$HOME/.git_settings/" --work-tree="$HOME" commit -m "karabiner.json updated" && \
 #  /opt/homebrew/bin/git --git-dir="$HOME/.git_settings/" --work-tree="$HOME" push origin master
@@ -22,5 +23,5 @@ echo "START: yadm"
 /opt/homebrew/bin/yadm commit -m "qwe"
 /opt/homebrew/bin/yadm push origin master
 
-log_duration_and_complete $start_time "END: yadm done"
+log_duration_and_complete $start_time "yadm"
 echo "----------------------------------------------------------------------------------------------------"
