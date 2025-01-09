@@ -52,3 +52,5 @@ export RESTIC_PASSWORD=$(security find-generic-password -a restic_backup -s rest
 /opt/homebrew/bin/restic backup "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs"
 log_duration_and_complete $start_time "backing up icloud"
 
+/opt/homebrew/bin/restic forget --keep-last 5
+/opt/homebrew/bin/restic prune
