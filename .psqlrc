@@ -21,6 +21,7 @@
 \set dead_tuples_stats 'SELECT schemaname, relname, n_dead_tup, n_live_tup FROM pg_stat_user_tables ORDER BY n_dead_tup DESC;'
 \set seq_scans_stats 'SELECT relname, seq_scan, idx_scan, n_live_tup FROM pg_stat_user_tables ORDER BY seq_scan DESC LIMIT 10;'
 \set toast_stats 'SELECT c.relname AS source_table_name, c.relpages AS source_table_number_of_pages, c.reltuples AS source_table_number_of_tuples, c.reltoastrelid AS toast_table_oid, t.relname AS toast_table_name, t.relpages AS toast_table_number_of_pages, t.reltuples AS toast_table_number_of_tuples FROM pg_class c JOIN pg_class t ON c.reltoastrelid = t.oid WHERE t.relpages > 0;'
+\set cache_hit_ratio 'SELECT relname AS table_name, CASE WHEN heap_blks_read + heap_blks_hit = 0 THEN 0 ELSE round((heap_blks_hit * 100.0) / (heap_blks_read + heap_blks_hit), 2) END AS cache_hit_ratio FROM pg_statio_user_tables ORDER BY cache_hit_ratio asc'
 
 -- runtime stat for queries
 \set waiting_queries 'SELECT pid, usename, wait_event_type, wait_event, query FROM pg_stat_activity WHERE wait_event_type IS NOT NULL;'
@@ -52,6 +53,7 @@
 \echo '| dead_tuples_stats     | Reports the number of dead tuples in tables for maintenance      |'
 \echo '| seq_scans_stats       | Shows the number of sequential scans versus index scans          |'
 \echo '| toast_stats           | Provides statistics about TOAST tables (used for large objects)  |'
+\echo '| cache_hit             | Calculates table-level cache hit ratios.                         |'
 \echo '+-----------------------+------------------------------------------------------------------+'
 \echo ' '
 \echo '--- Runtime Statistics for Queries ---'
@@ -70,5 +72,16 @@
 \echo '| settings              | Lists the current database settings and their values             |'
 \echo '| extensions            | Shows installed extensions along with their versions             |'
 \echo '+-----------------------+------------------------------------------------------------------+'
+
 \echo ' '
+\echo '              --------------------->CHECK THIS<---------------------'
+\echo '                            +-----------------------+'
+\echo '                            |      Main Checks       |'
+\echo '                            +-----------------------+'
+\echo '                            |    :cache_hit_ratio    | '
+\echo '                            |    :seq_scans_stats    | '
+\echo '                            |    :unused_indexes     | '
+\echo '                            |     :index_bloat       | '
+\echo '                            +-----------------------+'
+\echo '                             '
 
