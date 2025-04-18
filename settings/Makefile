@@ -2,17 +2,14 @@
 
 sync: karabiner sync_config
 
-sync_config:
+config:
 	./bin/sync_config.sh
-
-icloud_dotfiles:
-	./bin/icloud_dotfiles.sh
 
 karabiner:
 	./bin/sync_karabiner.sh
 
-is_up_to_date:
-	./bin/check_up_to_date.sh
+rclone:
+	./bin/rclone_backup.sh
 
-sync_plist:
+plist:
 	./plist/sync_plist.sh
