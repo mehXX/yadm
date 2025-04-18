@@ -8,7 +8,7 @@
     <!-- Program and its arguments -->
     <key>ProgramArguments</key>
     <array>
-        <string><HOME>/settings/bin/restic_backup_to_backblaze.sh</string>
+        <string><HOME>/settings/bin/rclone_backup.sh</string>
     </array>
 
     <!-- Run every hour -->
@@ -20,10 +20,10 @@
 
     <!-- Redirect output to log file -->
     <key>StandardOutPath</key>
-    <string>/tmp/crontab.logs</string>
+    <string>/tmp/plist.logs</string>
 
     <key>StandardErrorPath</key>
-    <string>/tmp/crontab.logs</string>
+    <string>/tmp/plist.logs</string>
 
     <!-- Run as soon as loaded (optional, but useful in case the system is rebooted) -->
     <key>RunAtLoad</key>
