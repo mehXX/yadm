@@ -57,6 +57,7 @@ trap on_error ERR
 
 
 # Start logging to stdout
+echo "----------------------------------------------------------------------------------------------------"
 date
 echo "BEGINNING /Users/ymka/settings/bin/rclone_backup.sh"
 echo "Current time: $(date +"%Y-%m-%d %H:%M:%S")"
