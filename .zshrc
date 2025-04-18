@@ -59,6 +59,7 @@ export PATH=$PATH:"$HOME/.DevUtils"
 export PATH=$PATH:"$HOME/.local/bin"
 export PATH=$PATH:"/usr/local/go/bin"
 export PATH=$PATH:"$HOME/settings/dev_utils"
+export PATH=$PATH:"/opt/homebrew/Cellar/libpq/17.4_1/bin"
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 export PGDATABASE="postgres"
