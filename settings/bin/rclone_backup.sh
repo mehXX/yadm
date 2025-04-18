@@ -16,7 +16,7 @@ if [ -e "$LAST_BACKUP_FILE" ]; then
     # if more than 86400 seconds (1 day) have passed since last backup
     if [ $((current_ts - last_ts)) -gt 86400 ]; then
         last_human=$(date -r "$last_ts" +"%Y-%m-%d %H:%M:%S")
-        telegram_text=$(printf "rclone-backup warning: no backup in the last 24h. Last backup was at %s" "$last_human")
+        telegram_text=$(printf "❗️rclone-backup warning: no backup in the last 24h. Last backup was at %s" "$last_human")
         curl -s -X POST "https://api.telegram.org/$TELEGRAM_BOT_API_TOKEN/sendMessage" \
              -d chat_id="253872226" \
              --data-urlencode text="$telegram_text"
