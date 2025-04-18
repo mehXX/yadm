@@ -38,7 +38,7 @@ log_duration_and_complete() {
     echo "DONE: $task_name in ${elapsed_time} ms"
 }
 
-echo "BEGINNING"
+echo "BEGINNING /Users/ymka/settings/bin/restic_backup_to_backblaze.sh"
 echo "Current time: $(date +"%Y-%m-%d %H:%M:%S")"
 
 start_time=$(get_current_time)
@@ -48,6 +48,8 @@ export B2_ACCOUNT_ID=$(security find-generic-password -a restic_backup -s b2-acc
 export B2_ACCOUNT_KEY=$(security find-generic-password -a restic_backup -s b2-account-key -w)
 export RESTIC_REPOSITORY=$(security find-generic-password -a restic_backup -s restic-repository -w)
 export RESTIC_PASSWORD=$(security find-generic-password -a restic_backup -s restic-password -w)
+
+restic unlock --remove-all -r "$RESTIC_REPOSITORY"
 
 /opt/homebrew/bin/restic backup "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs"
 log_duration_and_complete $start_time "backing up icloud"
