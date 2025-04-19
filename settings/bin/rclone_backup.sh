@@ -8,20 +8,21 @@ LAST_BACKUP_FILE="/tmp/rclone_backup.last"
 
 # load Telegram token early so we can alert if backups are stale
 export TELEGRAM_BOT_API_TOKEN=$(security find-generic-password -a rclone_backup -s TELEGRAM_BOT_API -w)
+export RCLONE_CONFIG_PASS=$(security find-generic-password -a rclone_backup -s RCLONE_CONFIG_PASS -w)
 
 # --- check for stale backup (>24h) and notify once per script run ---
-if [ -e "$LAST_BACKUP_FILE" ]; then
-    last_ts=$(cat "$LAST_BACKUP_FILE")
-    current_ts=$(date +%s)
-    # if more than 86400 seconds (1 day) have passed since last backup
-    if [ $((current_ts - last_ts)) -gt 86400 ]; then
-        last_human=$(date -r "$last_ts" +"%Y-%m-%d %H:%M:%S")
-        telegram_text=$(printf "❗️rclone-backup warning: no backup in the last 24h. Last backup was at %s" "$last_human")
-        curl -s -X POST "https://api.telegram.org/$TELEGRAM_BOT_API_TOKEN/sendMessage" \
-             -d chat_id="253872226" \
-             --data-urlencode text="$telegram_text"
-    fi
-fi
+#if [ -e "$LAST_BACKUP_FILE" ]; then
+#    last_ts=$(cat "$LAST_BACKUP_FILE")
+#    current_ts=$(date +%s)
+#    # if more than 86400 seconds (1 day) have passed since last backup
+#    if [ $((current_ts - last_ts)) -gt 86400 ]; then
+#        last_human=$(date -r "$last_ts" +"%Y-%m-%d %H:%M:%S")
+#        telegram_text=$(printf "❗️rclone-backup warning: no backup in the last 24h. Last backup was at %s" "$last_human")
+#        curl -s -X POST "https://api.telegram.org/$TELEGRAM_BOT_API_TOKEN/sendMessage" \
+#             -d chat_id="253872226" \
+#             --data-urlencode text="$telegram_text"
+#    fi
+#fi
 
 # prevent overlapping runs
 [ -e "$LOCK_FILE" ] && exit 0
@@ -39,7 +40,6 @@ cleanup() {
 }
 trap cleanup EXIT
 
-export RCLONE_CONFIG_PASS=$(security find-generic-password -a rclone_backup -s RCLONE_CONFIG_PASS -w)
 
 on_error() {
     local code=$?
