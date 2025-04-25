@@ -1,0 +1,13 @@
+[profile]
+name = "my-backup"
+repository = "b2:mac-backup-restic:/iCloud"
+password-file = "/path/to/restic-password.txt"
+
+[environment]
+B2_ACCOUNT_ID = "your_key_id"
+B2_ACCOUNT_KEY = "your_app_key"
+
+[backup]
+paths = [
+  "/path/to/important/data"
+]
