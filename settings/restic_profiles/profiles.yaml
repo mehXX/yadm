@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://creativeprojects.github.io/resticprofile/jsonschema/config-1.json
+
+version: '1'
+
+default:
+    repository: "b2:mac-backup-restic"
+    password-command: "security find-generic-password -a restic_backup -s PASSWORD -w"
+
+    backup:
+      source:
+        - "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs"
