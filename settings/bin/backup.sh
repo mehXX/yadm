@@ -2,12 +2,12 @@
 
 set -o errexit -o pipefail -o nounset
 
-LOCK_FILE="/tmp/rclone_backup.lock"
-NOTIFY_FLAG="/tmp/rclone_backup_error_notified"
+LOCK_FILE="/tmp/backup.lock"
+NOTIFY_FLAG="/tmp/backup_error_notified"
 
 # load Telegram token early so we can alert if backups are stale
-export TELEGRAM_BOT_API_TOKEN=$(security find-generic-password -a rclone_backup -s TELEGRAM_BOT_API -w)
-export RCLONE_CONFIG_PASS=$(security find-generic-password -a rclone_backup -s RCLONE_CONFIG_PASS -w)
+export TELEGRAM_BOT_API_TOKEN=$(security find-generic-password -a backup -s TELEGRAM_BOT_API -w)
+export RCLONE_CONFIG_PASS=$(security find-generic-password -a backup -s RCLONE_CONFIG_PASS -w)
 
 # prevent overlapping runs
 [ -e "$LOCK_FILE" ] && exit 0
@@ -59,7 +59,7 @@ trap on_error ERR
 # Start logging to stdout
 echo "----------------------------------------------------------------------------------------------------"
 date
-echo "BEGINNING /Users/ymka/settings/bin/rclone_backup.sh"
+echo "BEGINNING /Users/ymka/settings/bin/backup.sh"
 echo "Current time: $(date +"%Y-%m-%d %H:%M:%S")"
 
 get_current_time() { /opt/homebrew/bin/gdate +%s%N; }
