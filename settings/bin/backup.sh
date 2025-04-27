@@ -72,11 +72,11 @@ log_duration_and_complete() {
 
 start=$(get_current_time)
 echo "START: backing up iCloud to Backblaze B2"
-/opt/homebrew/bin/rclone sync \
-    "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs" \
-    encrypted-backblaze-b2:iCloud \
-    --exclude '**/.DS_Store' --exclude '.DS_Store' --delete-excluded
-log_duration_and_complete "$start" "backing up iCloud to Backblaze B2"
+#/opt/homebrew/bin/rclone sync \
+#    "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs" \
+#    encrypted-backblaze-b2:iCloud \
+#    --exclude '**/.DS_Store' --exclude '.DS_Store' --delete-excluded
+#log_duration_and_complete "$start" "backing up iCloud to Backblaze B2"
 
 start=$(get_current_time)
 echo "START: backing up iCloud to Google Drive"
