@@ -8,7 +8,7 @@
     <!-- Program and its arguments -->
     <key>ProgramArguments</key>
     <array>
-        <string><HOME>/settings/bin/rclone_backup.sh</string>
+        <string><HOME>/settings/bin/backup.sh</string>
     </array>
 
     <!-- Run every hour -->
