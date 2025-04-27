@@ -44,7 +44,6 @@ RPS1=""
 #go env -w GOSUMDB="sum.golang.org"
 #go env -w GOPROXY="https://goproxy.io,direct"
 export GOPATH=$HOME/go
-export GOPRIVATE=git.uzum.io*
 
 #ENV
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------- #
@@ -65,12 +64,7 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 export PGDATABASE="postgres"
 export PGUSER="postgres"
 export PGPASSWORD='postgres'
-
 export GIT_USER_CONFIG=$USER
-
-export AWS_PROFILE=Developer-570318669348
-
-export ZOEKT_URL="http://localhost:6070"
 
 export TIMEFMT="%E"
 
@@ -84,8 +78,6 @@ alias cd="z"
 alias ctags="`brew --prefix`/bin/ctags"
 alias project="cd $(go list -m -e -json | jq -r .Dir)"
 alias rm="trash"
-alias bat="bat --paging=never"
-alias config='/usr/bin/git --git-dir=$HOME/.git_settings --work-tree=$HOME'
 # Force rebuild: The -B flag (also --always-make) tells make to unconditionally make all targets, regardless of whether they are up to date or not.
 alias make="make -B"
 
@@ -96,47 +88,6 @@ function chpwd() {
 
 # WORK RELATED
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------- #
-
-get_secrets_dev() {
-  SERVICE_NAME=$(echo $1 | tr '-' '_')
-
-  NAMESPACE="dev"
-
-  SECRET_NAME=$(echo $1 | tr '_' '-')
-  SECRET_PREFIX="postgres.ufood-${SECRET_NAME}-psql.credentials.postgresql.acid.zalan.do"
-
-  PASSWORD=$(kubectl -n $NAMESPACE get secret $SECRET_PREFIX --template={{.data.password}} | base64 --decode)
-
-  USER=$(kubectl -n $NAMESPACE get secret $SECRET_PREFIX --template={{.data.username}} | base64 --decode)
-
-  HOST="ufood-${SECRET_NAME}-psql-pooler.dev.svc.cluster.local"
-  PORT="5432"
-
-  JDBC_URL="jdbc:postgresql://${HOST}:${PORT}/${SERVICE_NAME}?user=${USER}&password=${PASSWORD}"
-
-  printf "%s" "$JDBC_URL" | pbcopy
-}
-
-get_secrets_stable() {
-  SERVICE_NAME=$(echo $1 | tr '-' '_')
-
-  NAMESPACE="stable"
-
-  SECRET_NAME=$(echo $1 | tr '_' '-')
-  SECRET_PREFIX="postgres.ufood-${SECRET_NAME}-psql.credentials.postgresql.acid.zalan.do"
-
-  PASSWORD=$(kubectl -n $NAMESPACE get secret $SECRET_PREFIX --template={{.data.password}} | base64 --decode)
-
-  USER=$(kubectl -n $NAMESPACE get secret $SECRET_PREFIX --template={{.data.username}} | base64 --decode)
-
-  HOST="ufood-${SECRET_NAME}-psql-pooler.stable.svc.cluster.local"
-
-  PORT="5432"
-
-  JDBC_URL="jdbc:postgresql://${HOST}:${PORT}/${SERVICE_NAME}?user=${USER}&password=${PASSWORD}"
-
-  printf "%s" "$JDBC_URL" | pbcopy
-}
 
 
 # START
