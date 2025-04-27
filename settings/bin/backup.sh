@@ -8,6 +8,9 @@ NOTIFY_FLAG="/tmp/backup_error_notified"
 # load Telegram token early so we can alert if backups are stale
 export TELEGRAM_BOT_API_TOKEN=$(security find-generic-password -a backup -s TELEGRAM_BOT_API -w)
 export RCLONE_CONFIG_PASS=$(security find-generic-password -a backup -s RCLONE_CONFIG_PASS -w)
+export B2_ACCOUNT_ID=$(security find-generic-password -a backup -s B2_ACCOUNT_ID -w)
+export B2_ACCOUNT_KEY=$(security find-generic-password -a backup -s B2_ACCOUNT_KEY -w)
+
 
 # prevent overlapping runs
 [ -e "$LOCK_FILE" ] && exit 0
@@ -34,7 +37,7 @@ on_error() {
     msg=$(<"$ERROR_LOG")
 
     # always echo full error to stdout
-    printf '[%s] rclone-backup failed: exit %d, line %d, cmd: %s\n' \
+    printf '[%s] backup failed: exit %d, line %d, cmd: %s\n' \
         "$(date +"%Y-%m-%d %H:%M:%S")" \
         "$code" "$line" "$cmd"
     printf '%s\n' "$msg"
@@ -42,7 +45,7 @@ on_error() {
     # Telegram alert only once
     if [ ! -e "$NOTIFY_FLAG" ]; then
         local telegram_text
-        telegram_text=$(printf "rclone-backup failed: exit %d, line %d, cmd: %s\n%s" \
+        telegram_text=$(printf "backup failed: exit %d, line %d, cmd: %s\n%s" \
             "$code" "$line" "$cmd" "$msg")
 
         curl -s -X POST "https://api.telegram.org/$TELEGRAM_BOT_API_TOKEN/sendMessage" \
@@ -71,14 +74,6 @@ log_duration_and_complete() {
 [[ "$USER" == "ymka" ]] || { echo "USER is not ymka"; exit 1; }
 
 start=$(get_current_time)
-echo "START: backing up iCloud to Backblaze B2"
-#/opt/homebrew/bin/rclone sync \
-#    "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs" \
-#    encrypted-backblaze-b2:iCloud \
-#    --exclude '**/.DS_Store' --exclude '.DS_Store' --delete-excluded
-#log_duration_and_complete "$start" "backing up iCloud to Backblaze B2"
-
-start=$(get_current_time)
 echo "START: backing up iCloud to Google Drive"
 /opt/homebrew/bin/rclone sync \
     "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs" \
@@ -86,12 +81,19 @@ echo "START: backing up iCloud to Google Drive"
     --exclude '**/.DS_Store' --exclude '.DS_Store' --delete-excluded
 log_duration_and_complete "$start" "backing up iCloud to Google Drive"
 
+start=$(get_current_time)
+echo "START: backing up iCloud to Backblaze B2"
+/Users/ymka/.local/bin/resticprofile -c /Users/ymka/settings/restic_profiles/profiles.conf -n icloud backup
+/Users/ymka/.local/bin/resticprofile -c /Users/ymka/settings/restic_profiles/profiles.conf -n photos backup
+log_duration_and_complete "$start" "backing up iCloud to Backblaze B2"
+
+
 # if we had previously failed, now report recovery
 if [ -e "$NOTIFY_FLAG" ]; then
-    printf '[%s] rclone-backup succeeded after previous failures\n' \
+    printf '[%s] backup succeeded after previous failures\n' \
         "$(date +"%Y-%m-%d %H:%M:%S")"
     curl -s -X POST "https://api.telegram.org/$TELEGRAM_BOT_API_TOKEN/sendMessage" \
          -d chat_id="253872226" \
-         --data-urlencode text="rclone-backup succeeded at $(date +"%Y-%m-%d %H:%M:%S") after previous failures."
+         --data-urlencode text="backup succeeded at $(date +"%Y-%m-%d %H:%M:%S") after previous failures."
     rm -f "$NOTIFY_FLAG"
 fi

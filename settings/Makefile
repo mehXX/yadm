@@ -8,8 +8,8 @@ config:
 karabiner:
 	./bin/sync_karabiner.sh
 
-rclone:
-	./bin/rclone_backup.sh
+backup:
+	./bin/backup.sh
 
 plist:
 	./plist/sync_plist.sh

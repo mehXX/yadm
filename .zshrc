@@ -80,6 +80,7 @@ alias project="cd $(go list -m -e -json | jq -r .Dir)"
 alias rm="trash"
 # Force rebuild: The -B flag (also --always-make) tells make to unconditionally make all targets, regardless of whether they are up to date or not.
 alias make="make -B"
+alias resticprofile="resticprofile -c $HOME/settings/restic_profiles/profiles.conf"
 
 function chpwd() {
     emulate -L zsh
