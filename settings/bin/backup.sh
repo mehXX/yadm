@@ -10,7 +10,7 @@ export TELEGRAM_BOT_API_TOKEN=$(security find-generic-password -a backup -s TELE
 export RCLONE_CONFIG_PASS=$(security find-generic-password -a backup -s RCLONE_CONFIG_PASS -w)
 export B2_ACCOUNT_ID=$(security find-generic-password -a backup -s B2_ACCOUNT_ID -w)
 export B2_ACCOUNT_KEY=$(security find-generic-password -a backup -s B2_ACCOUNT_KEY -w)
-
+export PATH=$PATH:/opt/homebrew/bin/
 
 # prevent overlapping runs
 [ -e "$LOCK_FILE" ] && exit 0
