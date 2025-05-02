@@ -1,0 +1,15 @@
+
+
+!youtube.com###items > ytd-guide-entry-renderer[is-primary]:nth-child(1)
+!youtube.com###items > ytd-guide-entry-renderer[is-primary]:nth-child(2)
+!youtube.com###items > ytd-guide-entry-renderer[is-primary]:nth-child(3)
+!youtube.com###items > ytd-guide-entry-renderer[is-primary]:nth-child(4)
+!youtube.com###items > ytd-guide-entry-renderer[is-primary]:nth-child(5)
+!youtube.com###guide-renderer > #sections > ytd-guide-section-renderer:nth-child(2) > #items > ytd-guide-entry-renderer:last-child
+!youtube.com###guide-renderer > #sections > ytd-guide-section-renderer:nth-child(3)
+!youtube.com###guide-renderer > #sections > ytd-guide-section-renderer:nth-child(4)
+!youtube.com###guide-renderer > #sections > ytd-guide-section-renderer:nth-child(5)
+!youtube.com###guide-renderer > #sections > ytd-guide-section-renderer:nth-child(6)
+!youtube.com##ytd-mini-guide-renderer > #items > ytd-mini-guide-entry-renderer:nth-child(1)
+!youtube.com##ytd-mini-guide-renderer > #items > ytd-mini-guide-entry-renderer:nth-child(2)
+!youtube.com##ytd-mini-guide-renderer > #items > ytd-mini-guide-entry-renderer:nth-child(3)
