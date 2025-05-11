@@ -73,13 +73,13 @@ log_duration_and_complete() {
 
 [[ "$USER" == "ymka" ]] || { echo "USER is not ymka"; exit 1; }
 
-#start=$(get_current_time)
-#echo "START: backing up iCloud to Google Drive"
-#/opt/homebrew/bin/rclone sync \
-#    "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs" \
-#    google-drive:iCloud \
-#    --exclude '**/.DS_Store' --exclude '.DS_Store' --delete-excluded
-#log_duration_and_complete "$start" "backing up iCloud to Google Drive"
+start=$(get_current_time)
+echo "START: backing up iCloud to Proton Drive"
+/opt/homebrew/bin/rclone sync \
+    "/Users/ymka/Library/Mobile Documents/com~apple~CloudDocs" \
+    proton-drive:iCloud \
+    --exclude '**/.DS_Store' --exclude '.DS_Store' --delete-excluded
+log_duration_and_complete "$start" "backing up iCloud to Google Drive"
 
 start=$(get_current_time)
 echo "START: backing up iCloud to Backblaze B2"
