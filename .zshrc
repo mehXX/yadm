@@ -50,7 +50,7 @@ export GOPATH=$HOME/go
 
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-export EDITOR=micro
+export EDITOR=zed
 
 export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
