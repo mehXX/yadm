@@ -84,7 +84,7 @@ log_duration_and_complete "$start" "backing up iCloud to Google Drive"
 start=$(get_current_time)
 echo "START: backing up iCloud to Backblaze B2"
 /Users/ymka/.local/bin/resticprofile -c /Users/ymka/settings/restic_profiles/profiles.conf -n icloud backup
-/Users/ymka/.local/bin/resticprofile -c /Users/ymka/settings/restic_profiles/profiles.conf -n photos backup
+# /Users/ymka/.local/bin/resticprofile -c /Users/ymka/settings/restic_profiles/profiles.conf -n photos backup
 log_duration_and_complete "$start" "backing up iCloud to Backblaze B2"
 
 
