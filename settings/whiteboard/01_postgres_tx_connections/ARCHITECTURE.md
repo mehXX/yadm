@@ -1,52 +1,72 @@
-# PostgreSQL Connection Exhaustion Demonstration
+# PostgreSQL Transaction Connection Exhaustion Demo
 
-## Overall Architecture Plan
+## Project Purpose
+Demonstrates the PostgreSQL connection exhaustion problem when making external HTTP calls within database transactions. Shows how long-running transactions can exhaust connection pools and cause cascading failures.
 
-**Project Structure:**
+## Architecture Overview
+
+### System Components
 ```
 01_postgres_tx_connections/
-├── docker-compose.yml          # PostgreSQL + services orchestration
-├── slow-service/              # Service 1: Slow HTTP endpoint
-│   ├── main.go
+├── docker-compose.yml          # Container orchestration
+├── postgres/
+│   └── init.sql               # Database initialization
+├── slow-service/              # HTTP endpoint with artificial delay
+│   ├── main.go               # 3-second delay simulation
 │   ├── go.mod
 │   └── Dockerfile
-├── tx-service/                # Service 2: Transaction + external call
-│   ├── main.go
+├── tx-service/                # Transaction service (main bottleneck)
+│   ├── main.go               # DB transaction + external HTTP call
 │   ├── go.mod
 │   └── Dockerfile
-├── load-service/              # Service 3: Load generator
-│   ├── main.go
-│   ├── go.mod
-│   └── Dockerfile
-└── postgres/                  # PostgreSQL configuration
-    └── init.sql
+└── load-service/              # RPS-based load generator
+    ├── main.go               # Configurable requests per second
+    ├── go.mod
+    └── Dockerfile
 ```
 
-**Architecture Flow:**
-1. **PostgreSQL**: Default config (100 connections max)
-2. **Slow Service**: HTTP server with 5-second artificial delay
-3. **TX Service**: Opens DB transaction → calls slow service → commits
-4. **Load Service**: Sends concurrent requests to TX service
-5. **Observability**: Structured logging to demonstrate connection exhaustion
+### Service Details
 
-**Demonstration Steps:**
-1. Start with low concurrency (5 requests) - everything works
-2. Increase to medium concurrency (50 requests) - slower responses
-3. Increase to high concurrency (150+ requests) - connection failures
+#### 1. PostgreSQL Database
+- **Image**: postgres:15
+- **Connection Limit**: Default (100 connections)
+- **Database**: testdb
+- **Tables**: 
+  - `demo_table` (from init.sql)
+  - `requests` (created by tx-service)
 
-**Expected Demonstration:**
-- **Low concurrency (5 requests)**: All succeed, ~5 second response time
-- **Medium concurrency (50 requests)**: Some queueing, longer response times
-- **High concurrency (150 requests)**: Connection pool exhaustion, "too many connections" errors
+#### 2. Slow Service (Port 8080)
+- **Purpose**: Simulates slow external API
+- **Delay**: 3 seconds per request
+- **Metrics**: Tracks total/active requests
+- **Endpoints**:
+  - `GET /slow` - Returns JSON after 3s delay
 
-**Key Failure Points to Observe:**
-- PostgreSQL connection limit reached
-- Transactions holding connections during slow external calls
-- Request failures with connection errors
-- Performance degradation under load
+#### 3. TX Service (Port 8081)
+- **Purpose**: Core demonstration service
+- **Database**: pgx connection pool (max 100 connections)
+- **Flow**: 
+  1. Begin transaction
+  2. Call slow-service (3s delay)
+  3. Insert record to `requests` table
+  4. Commit transaction
+- **Endpoints**:
+  - `POST /process` - Main transaction endpoint
+  - `GET /health` - Connection pool status
 
-**Usage Instructions:**
-1. `docker-compose up` to start all services
-2. Test with `curl http://localhost:8082/test/5` (low load)
-3. Increase load: `curl http://localhost:8082/test/150` (high load)
-4. Monitor logs for connection errors
+#### 4. Load Service (Port 8082)
+- **Purpose**: RPS-based load testing
+- **Method**: Controlled requests per second
+- **Metrics**: Success rate, latency percentiles, error categorization
+- **Endpoints**:
+  - `GET /` - Web interface
+  - `GET /status` - Current test results
+  - `GET /test/{rps}` - Run test at specified RPS
+  - `GET /test/{rps}?duration={seconds}` - Custom duration
+
+
+## Key Observations
+1. **Connection Exhaustion**: Occurs around 35 RPS
+2. **Error Patterns**: 503 errors when pool is exhausted
+3. **Latency Impact**: Response times increase before failures
+4. **Recovery**: System recovers when load decreases

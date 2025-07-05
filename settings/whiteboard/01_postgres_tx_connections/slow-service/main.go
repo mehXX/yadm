@@ -11,16 +11,14 @@ import (
 )
 
 var (
-	totalRequests int64
+	totalRequests  int64
 	activeRequests int64
 	requestCounter int64
 )
 
 func main() {
-	go logMetrics()
-	
 	http.HandleFunc("/slow", slowHandler)
-	
+
 	log.Printf("Slow service starting on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -29,22 +27,19 @@ func slowHandler(w http.ResponseWriter, r *http.Request) {
 	requestID := generateRequestID()
 	atomic.AddInt64(&totalRequests, 1)
 	atomic.AddInt64(&activeRequests, 1)
-	
-	log.Printf("Slow service: received request %s", requestID)
-	
-	time.Sleep(5 * time.Second)
-	
+
+	time.Sleep(3 * time.Second)
+
 	response := map[string]interface{}{
 		"request_id": requestID,
-		"timestamp": time.Now(),
-		"message": "Response after 5 seconds",
+		"timestamp":  time.Now(),
+		"message":    "Response after 3 seconds",
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
-	
+
 	atomic.AddInt64(&activeRequests, -1)
-	log.Printf("Slow service: completed request %s", requestID)
 }
 
 func generateRequestID() string {
@@ -59,24 +54,4 @@ func randomString(length int) string {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
-}
-
-func logMetrics() {
-	ticker := time.NewTicker(1 * time.Second)
-	defer ticker.Stop()
-	
-	var lastTotal int64
-	
-	for {
-		select {
-		case <-ticker.C:
-			currentTotal := atomic.LoadInt64(&totalRequests)
-			currentActive := atomic.LoadInt64(&activeRequests)
-			
-			rps := float64(currentTotal-lastTotal) / 1.0
-			lastTotal = currentTotal
-			
-			log.Printf("Metrics: total=%d, active=%d, rps=%.2f", currentTotal, currentActive, rps)
-		}
-	}
 }

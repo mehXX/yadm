@@ -3,8 +3,8 @@ module tx-service
 go 1.24
 
 require (
-	github.com/jackc/pgx/v5 v5.5.1
 	github.com/google/uuid v1.5.0
+	github.com/jackc/pgx/v5 v5.5.1
 )
 
 require (

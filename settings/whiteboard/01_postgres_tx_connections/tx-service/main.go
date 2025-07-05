@@ -30,8 +30,12 @@ func main() {
 	http.HandleFunc("/process", processHandler)
 	http.HandleFunc("/health", healthHandler)
 
+	server := &http.Server{
+		Addr: ":8081",
+	}
+
 	log.Println("TX service starting on :8081")
-	if err := http.ListenAndServe(":8081", nil); err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
@@ -47,10 +51,9 @@ func setupDatabase() (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("failed to parse database URL: %w", err)
 	}
 
-	config.MaxConns = 30
-	config.MinConns = 5
-	config.MaxConnLifetime = time.Hour
-	config.MaxConnIdleTime = time.Minute * 30
+	// Configure connection pool to handle high concurrency
+	config.MaxConns = 100  // Match PostgreSQL limit
+	config.MinConns = 10   // Keep some ready
 
 	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
@@ -86,68 +89,60 @@ func processHandler(w http.ResponseWriter, r *http.Request) {
 
 	requestID := generateRequestID()
 	startTime := time.Now()
-	log.Printf("TX service: starting request %s", requestID)
-
-	stats := db.Stat()
-	log.Printf("TX service: connection pool stats - acquired: %d, idle: %d, max: %d", 
-		stats.AcquiredConns(), stats.IdleConns(), stats.MaxConns())
 
 	tx, err := db.Begin(context.Background())
 	if err != nil {
-		log.Printf("TX service: failed to begin transaction for request %s: %v", requestID, err)
 		http.Error(w, "Connection pool exhausted", http.StatusServiceUnavailable)
 		return
 	}
 	defer tx.Rollback(context.Background())
 
-	log.Printf("TX service: transaction started for request %s", requestID)
-
-	slowResponse, err := callSlowService(requestID)
+	slowResponse, err := callSlowService()
 	if err != nil {
-		log.Printf("TX service: slow service call failed for request %s: %v", requestID, err)
 		http.Error(w, "External service error", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = tx.Exec(context.Background(),
+	_, err = tx.Exec(
+		context.Background(),
 		"INSERT INTO requests (request_id, external_call_duration) VALUES ($1, $2)",
-		requestID, 5000)
+		requestID, 5000,
+	)
 	if err != nil {
-		log.Printf("TX service: insert failed for request %s: %v", requestID, err)
 		http.Error(w, "Database insert failed", http.StatusInternalServerError)
 		return
 	}
 
 	if err := tx.Commit(context.Background()); err != nil {
-		log.Printf("TX service: commit failed for request %s: %v", requestID, err)
 		http.Error(w, "Transaction commit failed", http.StatusInternalServerError)
 		return
 	}
 
 	duration := time.Since(startTime)
-	log.Printf("TX service: completed request %s in %v", requestID, duration)
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"request_id": requestID,
-		"duration_ms": duration.Milliseconds(),
-		"slow_service_response": slowResponse,
-	})
+	json.NewEncoder(w).Encode(
+		map[string]interface{}{
+			"request_id":            requestID,
+			"duration_ms":           duration.Milliseconds(),
+			"slow_service_response": slowResponse,
+		},
+	)
 }
 
-func callSlowService(requestID string) (map[string]interface{}, error) {
-	slowServiceURL := os.Getenv("SLOW_SERVICE_URL")
-	if slowServiceURL == "" {
-		slowServiceURL = "http://slow-service:8080"
+func callSlowService() (map[string]interface{}, error) {
+	slowServiceURL := "http://slow-service:8080"
+	client := &http.Client{}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", slowServiceURL+"/slow", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	log.Printf("TX service: calling slow service for request %s", requestID)
-
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	resp, err := client.Get(slowServiceURL + "/slow")
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("slow service call failed: %w", err)
 	}
@@ -162,7 +157,6 @@ func callSlowService(requestID string) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	log.Printf("TX service: slow service call completed for request %s", requestID)
 	return result, nil
 }
 

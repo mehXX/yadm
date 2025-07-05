@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-tx-demo
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - demo-network
+
+  slow-service:
+    build: 
+      context: ./slow-service
+      dockerfile: Dockerfile
+    container_name: slow-service-demo
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - LOG_LEVEL=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - demo-network
+    restart: unless-stopped
+
+  tx-service:
+    build: 
+      context: ./tx-service
+      dockerfile: Dockerfile
+    container_name: tx-service-demo
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - DATABASE_URL=postgres://testuser:testpass@postgres:5432/testdb
+      - SLOW_SERVICE_URL=http://slow-service:8080
+      - LOG_LEVEL=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      slow-service:
+        condition: service_started
+    networks:
+      - demo-network
+    restart: unless-stopped
+
+  load-service:
+    build: 
+      context: ./load-service
+      dockerfile: Dockerfile
+    container_name: load-service-demo
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - TX_SERVICE_URL=http://tx-service:8081
+      - LOG_LEVEL=info
+    depends_on:
+      tx-service:
+        condition: service_started
+    networks:
+      - demo-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  demo-network:
+    driver: bridge
