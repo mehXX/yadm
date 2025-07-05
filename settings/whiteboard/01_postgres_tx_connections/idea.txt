@@ -1,0 +1,3 @@
+i want to test my idea that you should send requests to external internet when you're in postgres transaction.
+Main problem is that you have limit of 100 connections in postgres and you get a lot of requests and your requests
+to external internet is slow, you'll run out of connections, since postgres uses 1 connection 1 tx.
