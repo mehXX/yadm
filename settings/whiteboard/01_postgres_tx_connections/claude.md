@@ -1,6 +1,6 @@
 ### 1. Tools
 - Postgres
-- Golang
+- Golang 1.24
 - PGX
 - Docker
 - docker-compose
