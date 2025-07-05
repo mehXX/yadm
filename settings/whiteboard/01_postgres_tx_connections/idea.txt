@@ -1,3 +1,32 @@
 i want to test my idea that you should send requests to external internet when you're in postgres transaction.
 Main problem is that you have limit of 100 connections in postgres and you get a lot of requests and your requests
 to external internet is slow, you'll run out of connections, since postgres uses 1 connection 1 tx.
+
+## Goal: Demonstrate the problem
+
+**The bottleneck setup:**
+- PostgreSQL with default connection limit (100)
+- External HTTP endpoint that's slow (5 seconds response time)
+- Transaction that holds connection while waiting for external response
+
+**What to demonstrate:**
+- Normal case: requests complete fine with low concurrency
+- Problem case: with enough concurrent requests, new requests start failing with "too many connections" errors
+- Connection pool exhaustion while transactions wait for slow external responses
+
+**Simple proof structure:**
+- 3 different Go services:
+  1. Slow service: HTTP endpoint that responds after 5 seconds
+  2. TX service: connects to PostgreSQL, starts tx → calls slow service → commits tx
+  3. Load service: makes requests to TX service to simulate load
+- Watch connection count climb and requests start failing
+
+**Logging for observability:**
+- Slow service: requests/second, avg latency
+- TX service: requests processed, DB connection status, transaction duration
+- Load service: requests sent, failed/succeeded counts, avg latency
+
+**Observable failure modes:**
+- "remaining connection slots are reserved" errors
+- Request timeouts as connection pool is exhausted
+- Response times degrading as connections become scarce
