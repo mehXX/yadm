@@ -72,9 +72,9 @@ export TIMEFMT="%E"
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------- #
 alias history='fc -il 1'
 alias clear='clear && printf "\e[3J" clear && printf "\e[3J" && ls'
-alias ls="eza --group-directories-first"
-alias grep="rg"
-alias cd="z"
+alias ls="/opt/homebrew/bin/eza --group-directories-first"
+alias grep="/opt/homebrew/bin/rg"
+# alias cd="z"
 alias ctags="`brew --prefix`/bin/ctags"
 alias project="cd $(go list -m -e -json | jq -r .Dir)"
 alias rm="trash"
